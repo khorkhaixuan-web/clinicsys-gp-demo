@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CliniSYS GP – Clinic Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' },
+            clinic: { 50:'#f0f9ff',100:'#e0f2fe',500:'#0ea5e9',600:'#0284c7',700:'#0369a1' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-clinic-700 via-primary-800 to-slate-900 p-4">
+    <div class="w-full max-w-md">
+      <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-clinic-600 to-primary-700 p-6 text-center text-white">
+          <div class="flex justify-center mb-3">
+            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fas fa-clinic-medical text-3xl"></i>
+            </div>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight">CliniSYS GP</h1>
+          <p class="text-clinic-100 text-sm mt-1">Clinic Management System v7</p>
+        </div>
+        <div class="p-8">
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-slate-600 mb-1">User ID</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><i class="fas fa-user"></i></span>
+              <input id="login-user" type="text" value="admin" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="Enter user ID" />
+            </div>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-slate-600 mb-1">Password</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><i class="fas fa-lock"></i></span>
+              <input id="login-pass" type="password" value="admin" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="Enter password" />
+            </div>
+          </div>
+          <button onclick="doLogin()" class="w-full bg-gradient-to-r from-clinic-600 to-primary-700 hover:from-clinic-700 hover:to-primary-800 text-white font-semibold py-2.5 rounded-lg shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]">
+            <i class="fas fa-sign-in-alt mr-2"></i> Login
+          </button>
+          <p class="text-xs text-center text-slate-400 mt-4 leading-relaxed">
+            Roles: <strong>admin/admin</strong> · doctor/doctor · nurse/nurse · cashier/cashier
+          </p>
+        </div>
+      </div>
+      <p class="text-center text-white/60 text-xs mt-6">© MedexOne Global Sdn Bhd · CliniSYS GP</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app-screen" class="hidden min-h-screen flex flex-col">
+    <!-- Top Navbar -->
+    <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
+      <div class="flex items-center justify-between px-4 h-14">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-slate-100">
+            <i class="fas fa-bars text-slate-600"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-clinic-500 to-primary-600 flex items-center justify-center text-white">
+              <i class="fas fa-clinic-medical text-sm"></i>
+            </div>
+            <span class="font-bold text-slate-800 hidden sm:inline">CliniSYS GP</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="hidden md:flex items-center gap-2 text-sm text-slate-500">
+            <i class="fas fa-clock"></i>
+            <span id="clock"></span>
+          </div>
+          <div class="flex items-center gap-2 bg-slate-50 rounded-full px-3 py-1.5">
+            <div class="w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold">A</div>
+            <span class="text-sm font-medium text-slate-700" id="current-user">admin</span>
+          </div>
+          <button onclick="doLogout()" class="p-2 rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-600 transition" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col transition-all duration-300 fixed lg:static inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 pt-14 lg:pt-0">
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+          <div class="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Main</div>
+          <a href="#" onclick="showView('dashboard')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="dashboard">
+            <i class="fas fa-home w-5 text-center"></i><span>Dashboard</span>
+          </a>
+          <a href="#" onclick="showView('registration')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="registration">
+            <i class="fas fa-user-plus w-5 text-center"></i><span>Patient Registration</span>
+          </a>
+          <a href="#" onclick="showView('queue')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="queue">
+            <i class="fas fa-list-ol w-5 text-center"></i><span>Queue / Patients</span>
+          </a>
+          <a href="#" onclick="showView('consultation')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="consultation">
+            <i class="fas fa-stethoscope w-5 text-center"></i><span>Consultation</span>
+          </a>
+          <a href="#" onclick="showView('dispensary')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="dispensary">
+            <i class="fas fa-pills w-5 text-center"></i><span>Dispensary</span>
+          </a>
+          <a href="#" onclick="showView('payment')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="payment">
+            <i class="fas fa-cash-register w-5 text-center"></i><span>Payment Collection</span>
+          </a>
+          <a href="#" onclick="showView('mc')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="mc">
+            <i class="fas fa-file-medical w-5 text-center"></i><span>Issue MC / Time Slip</span>
+          </a>
+
+          <div class="px-3 mt-6 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventory</div>
+          <a href="#" onclick="showView('stock')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="stock">
+            <i class="fas fa-boxes w-5 text-center"></i><span>Stock Master</span>
+          </a>
+          <a href="#" onclick="showView('supplier')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="supplier">
+            <i class="fas fa-truck w-5 text-center"></i><span>Supplier Master</span>
+          </a>
+          <a href="#" onclick="showView('regime')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="regime">
+            <i class="fas fa-layer-group w-5 text-center"></i><span>Regime Group</span>
+          </a>
+          <a href="#" onclick="showView('purchase')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="purchase">
+            <i class="fas fa-file-invoice w-5 text-center"></i><span>Purchase Order</span>
+          </a>
+          <a href="#" onclick="showView('goods-receive')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition" data-view="goods-receive">
+            <i class="fas fa-dolly w-5 text-center"></i><span>Goods Receive</span>
+          </a>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-xs text-slate-500">
+          Chapters 1–3 Demo · Local Storage
+        </div>
+      </aside>
+
+      <!-- Overlay for mobile -->
+      <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="view">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
+            <p class="text-slate-500 text-sm">Welcome to CliniSYS GP – Chapters 1 to 3</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <button type="button" onclick="showView('queue')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left hover:border-primary-300 transition w-full">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-500">Patients in Queue</p>
+                  <p class="text-3xl font-bold text-primary-600" id="stat-queue">0</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center"><i class="fas fa-users text-xl"></i></div>
+              </div>
+            </button>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-500">Registered Today</p>
+                  <p class="text-3xl font-bold text-emerald-600" id="stat-registered">0</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fas fa-user-check text-xl"></i></div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-500">Stock Items</p>
+                  <p class="text-3xl font-bold text-amber-600" id="stat-stock">0</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fas fa-pills text-xl"></i></div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-500">Pending Payment</p>
+                  <p class="text-3xl font-bold text-rose-600" id="stat-payment">0</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fas fa-money-bill-wave text-xl"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-r from-primary-50 to-clinic-50 border border-primary-100 rounded-xl p-4 mb-6 text-sm text-slate-700">
+            <p class="font-semibold text-primary-800 mb-2"><i class="fas fa-route mr-1"></i> Easy full visit flow</p>
+            <ol class="list-decimal list-inside space-y-1 text-slate-600">
+              <li><strong>Patient Registration</strong> → create patient → <em>Register to Queue</em></li>
+              <li><strong>Queue</strong> → click <em>Consult</em></li>
+              <li><strong>Consultation</strong> → notes + drugs (or Quick Regime) → <em>Complete</em></li>
+              <li><strong>Dispensary</strong> → check items → <em>Dispensary Completed</em></li>
+              <li><strong>Payment</strong> → receive payment → visit closed</li>
+            </ol>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+              <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-bolt text-amber-500"></i> Quick Actions</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <button onclick="showView('registration')" class="flex items-center gap-2 p-3 rounded-lg border border-slate-200 hover:border-primary-300 hover:bg-primary-50 transition text-left">
+                  <i class="fas fa-user-plus text-primary-600"></i><span class="text-sm font-medium">New Patient</span>
+                </button>
+                <button onclick="showView('queue')" class="flex items-center gap-2 p-3 rounded-lg border border-slate-200 hover:border-primary-300 hover:bg-primary-50 transition text-left">
+                  <i class="fas fa-list text-primary-600"></i><span class="text-sm font-medium">View Queue</span>
+                </button>
+                <button onclick="showView('consultation')" class="flex items-center gap-2 p-3 rounded-lg border border-slate-200 hover:border-primary-300 hover:bg-primary-50 transition text-left">
+                  <i class="fas fa-stethoscope text-primary-600"></i><span class="text-sm font-medium">Consultation</span>
+                </button>
+                <button onclick="showView('stock')" class="flex items-center gap-2 p-3 rounded-lg border border-slate-200 hover:border-primary-300 hover:bg-primary-50 transition text-left">
+                  <i class="fas fa-boxes text-primary-600"></i><span class="text-sm font-medium">Inventory</span>
+                </button>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+              <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-info-circle text-clinic-500"></i> About this Demo</h3>
+              <ul class="text-sm text-slate-600 space-y-2 mb-4">
+                <li class="flex gap-2"><i class="fas fa-check text-emerald-500 mt-0.5"></i> Chapter 1: Login & Get Started</li>
+                <li class="flex gap-2"><i class="fas fa-check text-emerald-500 mt-0.5"></i> Chapter 2: Registration, Consultation, Dispensary, Payment, MC</li>
+                <li class="flex gap-2"><i class="fas fa-check text-emerald-500 mt-0.5"></i> Chapter 3: Stock Master, Supplier, Regime, PO, Goods Receive</li>
+                <li class="flex gap-2"><i class="fas fa-database text-slate-400 mt-0.5"></i> Data persists in browser LocalStorage</li>
+              </ul>
+              <button type="button" onclick="resetDemoData()" class="w-full text-sm border border-slate-300 hover:border-rose-300 hover:bg-rose-50 text-slate-600 hover:text-rose-700 py-2 rounded-lg transition">
+                <i class="fas fa-undo mr-1"></i> Reset Demo Data
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- REGISTRATION -->
+        <div id="view-registration" class="view hidden">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Patient Registration</h1>
+              <p class="text-slate-500 text-sm">Register cash, panel or dependant patients</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="exportPatientsCSV()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class="fas fa-file-csv"></i> Export CSV
+              </button>
+              <button type="button" onclick="openPatientModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center gap-2">
+                <i class="fas fa-plus"></i> New Patient
+              </button>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex flex-wrap gap-3">
+              <input id="reg-search" type="text" placeholder="Search by name, IC, phone..." class="flex-1 min-w-[200px] border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none" oninput="renderPatientTable()" />
+              <select id="reg-filter-type" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" onchange="renderPatientTable()">
+                <option value="">All Types</option>
+                <option value="Cash">Cash</option>
+                <option value="Panel">Panel</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="text-left px-4 py-3 font-medium">Name</th>
+                    <th class="text-left px-4 py-3 font-medium">IC / Passport</th>
+                    <th class="text-left px-4 py-3 font-medium">Type</th>
+                    <th class="text-left px-4 py-3 font-medium">Phone</th>
+                    <th class="text-left px-4 py-3 font-medium">Registered</th>
+                    <th class="text-right px-4 py-3 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUEUE -->
+        <div id="view-queue" class="view hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Patient Queue</h1>
+            <p class="text-slate-500 text-sm">Registration → Consultation → Dispensary → Payment</p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="text-left px-4 py-3 font-medium">#</th>
+                    <th class="text-left px-4 py-3 font-medium">Status</th>
+                    <th class="text-left px-4 py-3 font-medium">Patient</th>
+                    <th class="text-left px-4 py-3 font-medium">IC</th>
+                    <th class="text-left px-4 py-3 font-medium">Doctor</th>
+                    <th class="text-left px-4 py-3 font-medium">Reason</th>
+                    <th class="text-left px-4 py-3 font-medium">Time In</th>
+                    <th class="text-right px-4 py-3 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="queue-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONSULTATION -->
+        <div id="view-consultation" class="view hidden">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Consultation</h1>
+              <p class="text-slate-500 text-sm">Record notes, prescribe & complete visit</p>
+            </div>
+            <select id="consult-patient-select" class="border border-slate-300 rounded-lg px-3 py-2 text-sm min-w-[220px]" onchange="loadConsultation()">
+              <option value="">— Select patient (status REG / FCON) —</option>
+            </select>
+          </div>
+
+          <div id="consult-empty" class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center text-slate-400">
+            <i class="fas fa-stethoscope text-4xl mb-3"></i>
+            <p>Select a patient from the queue who has status <strong>REG</strong> or is in consultation.</p>
+          </div>
+
+          <div id="consult-workspace" class="hidden space-y-4">
+            <!-- Patient status bar -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-wrap gap-4 items-center">
+              <div class="flex-1 min-w-[200px]">
+                <p class="text-xs text-slate-500">Patient</p>
+                <p class="font-bold text-lg" id="c-name">—</p>
+                <p class="text-sm text-slate-500" id="c-ic">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500">Age / Gender</p>
+                <p class="font-medium" id="c-age">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500">Payment</p>
+                <p class="font-medium" id="c-payment">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500">Allergies</p>
+                <p class="font-medium text-rose-600" id="c-allergy">None recorded</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+              <!-- Notes -->
+              <div class="xl:col-span-2 space-y-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <span class="font-semibold text-sm">Consultation Notes</span>
+                    <div class="flex gap-1">
+                      <button class="p-1.5 rounded hover:bg-slate-200 text-slate-500" title="Pen (simulated)"><i class="fas fa-pen"></i></button>
+                      <button class="p-1.5 rounded hover:bg-slate-200 text-slate-500" title="Highlighter"><i class="fas fa-highlighter"></i></button>
+                      <button class="p-1.5 rounded hover:bg-slate-200 text-slate-500" title="Eraser"><i class="fas fa-eraser"></i></button>
+                    </div>
+                  </div>
+                  <textarea id="c-notes" rows="8" class="w-full p-4 text-sm outline-none resize-y border-0" placeholder="Type or simulate handwriting notes here...&#10;&#10;Example:&#10;Patient fever for 1 day&#10;Sore throat 1 day&#10;No allergy to food or medicine"></textarea>
+                  <div class="px-4 py-2 border-t border-slate-100 bg-amber-50/50">
+                    <p class="text-xs font-medium text-amber-800 mb-1">Patient Summary (persistent)</p>
+                    <textarea id="c-summary" rows="2" class="w-full text-sm bg-transparent outline-none resize-none" placeholder="Chronic conditions, history..."></textarea>
+                  </div>
+                </div>
+
+                <!-- Prescription -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div class="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                    <span class="font-semibold text-sm">Prescription Order</span>
+                    <div class="flex gap-2">
+                      <input id="drug-search" type="text" placeholder="Search drug (e.g. para%)" class="border border-slate-300 rounded-lg px-2 py-1 text-xs w-40" oninput="filterDrugs()" />
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                    <div class="p-3 max-h-64 overflow-y-auto">
+                      <p class="text-xs text-slate-500 mb-2">Available items</p>
+                      <div id="drug-list" class="space-y-1"></div>
+                    </div>
+                    <div class="p-3 max-h-64 overflow-y-auto">
+                      <p class="text-xs text-slate-500 mb-2">Ordered (this visit)</p>
+                      <div id="ordered-list" class="space-y-1"></div>
+                      <p id="ordered-empty" class="text-xs text-slate-400 italic">No items yet. Click a drug to add.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Side panel -->
+              <div class="space-y-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                  <h4 class="font-semibold text-sm mb-3">Sub Functions</h4>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-left" onclick="toast('Patient Biodata opened (demo)')"><i class="fas fa-id-card mr-1 text-primary-500"></i> Patient Biodata</button>
+                    <button class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-left" onclick="toast('Imaging / Document (demo)')"><i class="fas fa-images mr-1 text-primary-500"></i> Imaging</button>
+                    <button class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-left" onclick="toast('Statistics Data (demo)')"><i class="fas fa-chart-line mr-1 text-primary-500"></i> Stat Data</button>
+                    <button class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-left" onclick="toast('Immunisation (demo)')"><i class="fas fa-syringe mr-1 text-primary-500"></i> Immunisation</button>
+                    <button class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-left" onclick="showView('mc')"><i class="fas fa-file-medical mr-1 text-primary-500"></i> Medical Cert</button>
+                    <button class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-left" onclick="toast('Referral Letter (demo)')"><i class="fas fa-envelope mr-1 text-primary-500"></i> Letter</button>
+                  </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                  <h4 class="font-semibold text-sm mb-3">Quick Regime</h4>
+                  <p class="text-xs text-slate-500 mb-2">One-click add common drug sets</p>
+                  <div id="regime-quick-list" class="space-y-1 max-h-32 overflow-y-auto text-xs"></div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                  <h4 class="font-semibold text-sm mb-3">Visit History</h4>
+                  <div id="visit-history" class="text-xs space-y-2 max-h-40 overflow-y-auto text-slate-600"></div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-2">
+                  <label class="block text-xs font-medium text-slate-500">Consultation Fee (RM)</label>
+                  <input id="c-fee" type="number" value="30" min="0" step="0.01" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+                  <button type="button" onclick="completeConsultation()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg mt-2">
+                    <i class="fas fa-check-circle mr-1"></i> Complete Consultation → Dispensary
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DISPENSARY -->
+        <div id="view-dispensary" class="view hidden">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Dispensary</h1>
+              <p class="text-slate-500 text-sm">Prepare, check & dispense medications</p>
+            </div>
+            <select id="disp-patient-select" class="border border-slate-300 rounded-lg px-3 py-2 text-sm min-w-[220px]" onchange="loadDispensary()">
+              <option value="">— Select patient (status FCON) —</option>
+            </select>
+          </div>
+          <div id="disp-empty" class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center text-slate-400">
+            <i class="fas fa-pills text-4xl mb-3"></i>
+            <p>Select a patient with status <strong>FCON</strong> (Finish Consultation).</p>
+          </div>
+          <div id="disp-workspace" class="hidden space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <p class="font-bold text-lg" id="d-name">—</p>
+                  <p class="text-sm text-slate-500" id="d-ic">—</p>
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="printDrugLabels()" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50"><i class="fas fa-print mr-1"></i> Drug Labels</button>
+                  <button onclick="completeDispensary()" class="px-4 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700"><i class="fas fa-check mr-1"></i> Dispensary Completed</button>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50">
+                    <tr>
+                      <th class="text-left px-3 py-2">Code</th>
+                      <th class="text-left px-3 py-2">Description</th>
+                      <th class="text-left px-3 py-2">Qty</th>
+                      <th class="text-left px-3 py-2">Dosage</th>
+                      <th class="text-left px-3 py-2">Freq</th>
+                      <th class="text-right px-3 py-2">Unit Price</th>
+                      <th class="text-right px-3 py-2">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="disp-items-body"></tbody>
+                </table>
+              </div>
+              <div class="mt-4 text-right">
+                <span class="text-slate-500">Medication Total: </span>
+                <span class="font-bold text-lg" id="disp-total">RM 0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYMENT -->
+        <div id="view-payment" class="view hidden">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Payment Collection</h1>
+              <p class="text-slate-500 text-sm">By Details / By Summary</p>
+            </div>
+            <select id="pay-patient-select" class="border border-slate-300 rounded-lg px-3 py-2 text-sm min-w-[220px]" onchange="loadPayment()">
+              <option value="">— Select patient (status FDIS) —</option>
+            </select>
+          </div>
+          <div id="pay-empty" class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center text-slate-400">
+            <i class="fas fa-cash-register text-4xl mb-3"></i>
+            <p>Select a patient with status <strong>FDIS</strong> (Finished Dispensary).</p>
+          </div>
+          <div id="pay-workspace" class="hidden max-w-2xl">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-bold text-lg" id="p-name">—</p>
+                  <p class="text-sm text-slate-500" id="p-ic">—</p>
+                </div>
+                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded">CASH</span>
+              </div>
+              <div class="border-t border-slate-100 pt-4 space-y-2 text-sm">
+                <div class="flex justify-between"><span>Consultation</span><span id="p-consult">RM 0.00</span></div>
+                <div class="flex justify-between"><span>Medication</span><span id="p-med">RM 0.00</span></div>
+                <div class="flex justify-between"><span>Investigation / Treatment / Other</span><span id="p-other">RM 0.00</span></div>
+                <div class="flex justify-between font-bold text-base border-t border-slate-200 pt-2 mt-2"><span>Total</span><span id="p-total">RM 0.00</span></div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-slate-500">Payment Method</label>
+                  <select id="pay-method" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mt-1">
+                    <option>Cash</option>
+                    <option>Credit Card</option>
+                    <option>Cheque</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs text-slate-500">Received Amount (RM)</label>
+                  <input id="pay-received" type="number" step="0.01" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mt-1" />
+                </div>
+              </div>
+              <button onclick="confirmPayment()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg">
+                <i class="fas fa-check-double mr-1"></i> Receive Payment & Close Visit
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MC -->
+        <div id="view-mc" class="view hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Issue Medical Certificate / Time Slip</h1>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-xl space-y-4">
+            <div>
+              <label class="text-sm font-medium text-slate-600">Patient</label>
+              <select id="mc-patient" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-medium text-slate-600">From Date</label>
+                <input id="mc-from" type="date" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium text-slate-600">To Date</label>
+                <input id="mc-to" type="date" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-slate-600">Days</label>
+              <input id="mc-days" type="number" value="1" min="1" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="text-sm font-medium text-slate-600">Diagnosis / Complaints</label>
+              <input id="mc-diag" type="text" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g. Acute URTI" />
+            </div>
+            <div>
+              <label class="text-sm font-medium text-slate-600">Doctor</label>
+              <input id="mc-doctor" type="text" value="DR HENRY TAN" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <button onclick="printMC()" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 rounded-lg">
+              <i class="fas fa-print mr-1"></i> Preview / Print MC
+            </button>
+          </div>
+        </div>
+
+        <!-- STOCK MASTER -->
+        <div id="view-stock" class="view hidden">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Stock Master Setup</h1>
+              <p class="text-slate-500 text-sm">Drug inventory with batch & pricing</p>
+            </div>
+            <button onclick="openStockModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <i class="fas fa-plus"></i> Add Stock Item
+            </button>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b">
+              <input id="stock-search" type="text" placeholder="Search code or description..." class="w-full max-w-md border border-slate-300 rounded-lg px-3 py-2 text-sm" oninput="renderStockTable()" />
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="text-left px-4 py-3">Code</th>
+                    <th class="text-left px-4 py-3">Description</th>
+                    <th class="text-left px-4 py-3">UOM</th>
+                    <th class="text-right px-4 py-3">Balance</th>
+                    <th class="text-right px-4 py-3">Unit Price</th>
+                    <th class="text-left px-4 py-3">Reorder</th>
+                    <th class="text-right px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="stock-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUPPLIER -->
+        <div id="view-supplier" class="view hidden">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Supplier Master Setup</h1>
+            </div>
+            <button onclick="openSupplierModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <i class="fas fa-plus"></i> Add Supplier
+            </button>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                  <th class="text-left px-4 py-3">Code</th>
+                  <th class="text-left px-4 py-3">Name</th>
+                  <th class="text-left px-4 py-3">Contact</th>
+                  <th class="text-left px-4 py-3">Phone</th>
+                  <th class="text-right px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="supplier-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- REGIME -->
+        <div id="view-regime" class="view hidden">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Regime Group Setup</h1>
+              <p class="text-slate-500 text-sm">Pre-defined drug sets for common conditions</p>
+            </div>
+            <button onclick="openRegimeModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <i class="fas fa-plus"></i> Add Regime
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="regime-cards"></div>
+        </div>
+
+        <!-- PURCHASE ORDER -->
+        <div id="view-purchase" class="view hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Purchase Order</h1>
+            <p class="text-slate-500 text-sm">Create PO to suppliers (demo)</p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-medium">Supplier</label>
+                <select id="po-supplier" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+              </div>
+              <div>
+                <label class="text-sm font-medium">PO Date</label>
+                <input id="po-date" type="date" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-medium">Item</label>
+              <select id="po-item" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-medium">Quantity</label>
+                <input id="po-qty" type="number" value="100" min="1" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Unit Cost (RM)</label>
+                <input id="po-cost" type="number" step="0.01" value="5.00" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <button onclick="createPO()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium">
+              <i class="fas fa-file-invoice mr-1"></i> Create Purchase Order
+            </button>
+            <div id="po-list" class="mt-4 text-sm space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- GOODS RECEIVE -->
+        <div id="view-goods-receive" class="view hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Goods Receive</h1>
+            <p class="text-slate-500 text-sm">Receive stock against PO or direct</p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl space-y-4">
+            <div>
+              <label class="text-sm font-medium">Select Stock Item</label>
+              <select id="gr-item" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="text-sm font-medium">Qty Received</label>
+                <input id="gr-qty" type="number" value="50" min="1" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Batch No</label>
+                <input id="gr-batch" type="text" value="BATCH-001" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Expiry</label>
+                <input id="gr-expiry" type="date" class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <button onclick="receiveGoods()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium">
+              <i class="fas fa-dolly mr-1"></i> Receive Goods (Update Stock)
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="modal-overlay" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-5 py-3 rounded-lg shadow-lg text-sm z-[60] hidden transform transition"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* CliniSYS GP – Custom styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Active nav */
+.nav-item.active {
+  background-color: #1e293b;
+  color: #fff;
+  font-weight: 500;
+}
+.nav-item.active i {
+  color: #38bdf8;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-reg { background: #dbeafe; color: #1d4ed8; }
+.badge-fcon { background: #fef3c7; color: #b45309; }
+.badge-fdis { background: #d1fae5; color: #047857; }
+.badge-bill { background: #e0e7ff; color: #4338ca; }
+.badge-done { background: #f1f5f9; color: #64748b; }
+
+/* Table row hover */
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Modal animation */
+#modal-overlay.show {
+  display: flex;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Print styles for MC */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
